@@ -1,0 +1,11 @@
+
+#contact-message-input {
+	resize: vertical;
+	overflow: auto;
+	max-height: 350px;
+}
+
+.modal-open {
+	overflow-y: scroll;
+	padding-right: 0px !important;
+}
