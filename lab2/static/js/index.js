@@ -46,11 +46,11 @@ var resigterModalComponent = function() {
 			} else {
 
 				$.ajax({
-	                url: "/register",
+	                url: '/register',
 	                type: 'POST',
 	                data: {
-	                    username: username,
-	                    password: password            
+	                    'username': username,
+	                    'password': password            
 	                },
 	                complete: function(data, status) {
 	                    if (status == "success") {

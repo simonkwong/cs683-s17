@@ -1,17 +1,20 @@
 import MySQLdb
 import hashlib
 import crypt
+import os
+import binascii
 
 import config
 
 
 class DbController():
 	def __init__(self):
-		self.db = MySQLdb.connect(host=config.DB_INFO['host'],
-								  user=config.DB_INFO['user'],
-								  passwd=config.DB_INFO['password'],
-								  db=config.DB_INFO['database'],
-								  port=config.DB_INFO['port'])
+		pass
+		# self.db = MySQLdb.connect(host=config.DB_INFO['host'],
+		# 						  user=config.DB_INFO['user'],
+		# 						  passwd=config.DB_INFO['password'],
+		# 						  db=config.DB_INFO['database'],
+		# 						  port=config.DB_INFO['port'])
 
 	def execute_query(self, query):
 		try:
@@ -39,8 +42,8 @@ class DbController():
 		query = """ CREATE TABLE IF NOT EXISTS users (
 					user_id INT(16) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
 					username VARCHAR(128) NOT NULL,
-					salt VARCHAR(512) DEFAULT NULL,
-					hash VARCHAR(512) DEFAULT NULL
+					salt VARCHAR(128) DEFAULT NULL,
+					hash VARCHAR(128) DEFAULT NULL
 					)
 				"""
 
@@ -49,7 +52,11 @@ class DbController():
 
 	def add_user(self, username, password):
 
+		salt = salt = binascii.b2a_hex(os.urandom(64))
+		hashed = hashlib.sha512(password + salt).hexdigest()
+		print salt
+		print hashed
 
-
-		query = """ INSERT INTO users (username, salt, hash) VALUES ("%s", "%s", "%s")
-				""" % (username, salt, hashed)
+		# query = """ INSERT INTO users (username, salt, hash) VALUES ("%s", "%s", "%s")
+		# 		""" % (username, salt, hashed)
+		# pass
