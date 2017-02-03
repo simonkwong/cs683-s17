@@ -9,12 +9,11 @@ import config
 
 class DbController():
 	def __init__(self):
-		pass
-		# self.db = MySQLdb.connect(host=config.DB_INFO['host'],
-		# 						  user=config.DB_INFO['user'],
-		# 						  passwd=config.DB_INFO['password'],
-		# 						  db=config.DB_INFO['database'],
-		# 						  port=config.DB_INFO['port'])
+		self.db = MySQLdb.connect(host=config.DB_INFO['host'],
+								  user=config.DB_INFO['user'],
+								  passwd=config.DB_INFO['password'],
+								  db=config.DB_INFO['database'],
+								  port=config.DB_INFO['port'])
 
 	def execute_query(self, query):
 		try:
@@ -51,12 +50,18 @@ class DbController():
 		return True
 
 	def add_user(self, username, password):
-
 		salt = salt = binascii.b2a_hex(os.urandom(64))
 		hashed = hashlib.sha512(password + salt).hexdigest()
-		print salt
-		print hashed
 
-		# query = """ INSERT INTO users (username, salt, hash) VALUES ("%s", "%s", "%s")
-		# 		""" % (username, salt, hashed)
-		# pass
+		query = """ INSERT INTO users (username, salt, hash) VALUES ("%s", "%s", "%s")
+				""" % (username, salt, hashed)
+		user_id = self.execute_query(query)
+		return True
+
+	def verify_user(self, username, password):
+		query = """ SELECT * FROM users WHERE username = "%s"
+				""" % username
+		user = self.fetch_one(query)
+		if (user["username"] != username):
+			return False
+		return (user["hash"] == hashlib.sha512(password + user["salt"]).hexdigest())

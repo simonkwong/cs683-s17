@@ -11,18 +11,14 @@ var loginModalComponent = function() {
 			var password = document.getElementById("login-password").value;
 
 			$.ajax({
-                url: window.location.pathname + "/login",
+                url: "/login",
                 type: 'POST',
                 data: {
                     username: username,
                     password: password 
                 },
                 complete: function(data, status) {
-                    if (status == "success") {
-                        location.reload();
-                    } else {
-                        alert("Something went wrong during the login.");
-                    }
+                	// var response = (JSON.parse(JSON.stringify(data))).responseJSON;
                 }
 			});
 		});
@@ -53,11 +49,11 @@ var resigterModalComponent = function() {
 	                    'password': password            
 	                },
 	                complete: function(data, status) {
-	                    if (status == "success") {
-	                		window.location = "/home";
-	                    } else {
-	                        alert("Something went wrong during registration.");
-	                    }
+	                  //   if (status == "success") {
+	                		// window.location = "/home";
+	                  //   } else {
+	                  //       alert("Registration Failed.");
+	                  //   }
 	                }
 				});
 			};
