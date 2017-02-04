@@ -10,5 +10,5 @@ DB_INFO = {'host':'127.0.0.1',
            'password':'ncc17o1ee1o71ccn',
            'database':'cs683_db'}
 
-HOST = '127.0.0.1'
+HOST = '0.0.0.0'
 PORT = '8080'
