@@ -1,5 +1,7 @@
 # 	Step 2. Cookies (by 2/3)
 
+https://github.com/simonkwong/cs683-s17
+
 
 In Packet #41 You can Clearly See How The Cookie Is Being Exchanged In The Header. Once The Login Info Is Inputted, You Can See The Info Being Passed In From The HTML Form All In PlainText.
 
