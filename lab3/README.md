@@ -1,0 +1,3 @@
+#Replay Attack
+
+#####Sniff the pkts from a web browser to your server using 1)http and (optional) 2)https while a legitimate user logs in to your website. Write a program that takes the pkt capture file (txt format is fine), the URL of your website, and launches a replay attack on your website to access the restricted content as the legitimate user. Make sure that your web server responds with the restricted content only when the cookie is valid. In other words, this replayed cookie is an authentication cookie. Does the capture file from 1) works? (Optional) How about from 2)? Explain your answer in the README. You will need to do some socket programming to make your program act like a web browser.
