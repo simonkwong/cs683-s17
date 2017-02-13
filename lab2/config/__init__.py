@@ -1,7 +1,7 @@
-DB_INFO = {'host':'127.0.0.1',
+DB_INFO = {'host':'192.168.136.1',
            'port':3306,
-           'user':'root',
-           'password':'',
+           'user':'simon',
+           'password':'ncc17o1e',
            'database':'cs683_db'}
 
 HOST = '0.0.0.0'

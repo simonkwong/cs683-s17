@@ -67,4 +67,5 @@ def logout():
 		return response
 
 if __name__ == "__main__":
-	app.run(config.HOST, config.PORT, ssl_context=('server.crt', 'server.key'))
+	# , ssl_context=('server.crt', 'server.key')
+	app.run(config.HOST, config.PORT)
