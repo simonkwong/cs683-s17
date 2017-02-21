@@ -1,2 +1,4 @@
 [A[Bconfig
 __init__.py
+config
+*.pyc
