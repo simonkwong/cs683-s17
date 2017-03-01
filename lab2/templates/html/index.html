@@ -17,6 +17,43 @@
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
 		<script src="https://use.fontawesome.com/d9dd0c4d7a.js"></script>
 		<script type="text/javascript" src="{{ url_for('static', filename='js/index.js') }}"></script>
+		
+		<!-- HASH SHA512 LIBRARY -->
+		<script type="text/javascript" src="{{ url_for('static', filename='js/js-sha512.js') }}"></script>
+
+		<!-- CRYPTICO ENCRYPTION AND DECRYPTION LIBRARY -->
+		<script type="text/javascript" src="{{ url_for('static', filename='js/cryptico/jsbn.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/cryptico/random.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/cryptico/hash.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/cryptico/rsa.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/cryptico/aes.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/cryptico/api.js') }}"></script>
+
+
+        <!-- JSENCRYPT ENCRYPTION AND DECRYPTION LIBRARY -->
+        <script type="text/javascript" src="{{ url_for('static', filename='js/jsencrypt/asn1js/asn1.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/jsencrypt/asn1js/base64.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/jsencrypt/asn1js/hex.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/jsencrypt/asn1js/oids.js') }}"></script>
+
+        <script type="text/javascript" src="{{ url_for('static', filename='js/jsencrypt/jsbn/base64.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/jsencrypt/jsbn/jsbn.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/jsencrypt/jsbn/jsbn2.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/jsencrypt/jsbn/prng4.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/jsencrypt/jsbn/rng.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/jsencrypt/jsbn/rsa-async.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/jsencrypt/jsbn/rsa.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/jsencrypt/jsbn/rsa2.js') }}"></script>
+
+        <script type="text/javascript" src="{{ url_for('static', filename='js/jsencrypt/jsrsasign/asn1-1.0.js') }}"></script>
+
+        <script type="text/javascript" src="{{ url_for('static', filename='js/jsencrypt/jsencrypt.js') }}"></script>
+
+
+        <!-- FILESAVER LIBRARY -->
+		<script type="text/javascript" src="{{ url_for('static', filename='js/file-saver/FileSaver.js') }}"></script>
+		<script type="text/javascript" src="{{ url_for('static', filename='js/file-saver/FileSaver.min.js') }}"></script>
+
 
     </head>
 
@@ -41,14 +78,19 @@
 							</div>
 							<div class="form-element-row">
 								<center>
-									<input required type="text" placeholder="username" value="" id="register-username" name="register-username">
-									<input required type="password" placeholder="password" value="" id="register-password" name="register-password">
-									<input required type="password" placeholder="confirm password" value="" id="confirm-password" name="confirm-password">
-									
+									<input required type="text" placeholder="username" value="" id="register-username">
+									<input required type="password" placeholder="password" value="" id="register-password">
+									<input required type="password" placeholder="confirm password" value="" id="confirm-password">
+									<br>
+									<label for="register-public-key">Upload Your Public Key</label>
+									<input required type="file" id="register-public-key" accept=".pem">
+									Don't Have A Public Key?
+									<button id="generate-keypair">Generate KeyPair</button>
 								</center>
 							</div>
 							<div class="modal-footer">
-								<button id="register-button" type="submit" class="std-btn go">Login</button>
+								<p class="status-message" id="register-status-message"></p>
+								<button id="register-button" type="submit" class="std-btn go">Register</button>
 							</div>
 						</form>
 			    	</div>
@@ -68,11 +110,12 @@
 							</div>
 							<div class="form-element-row">
 								<center>
-									<input required type="text" placeholder="username" value="" id="login-username" name="login-username">
-									<input required type="password" placeholder="password" value="" id="login-password" name="login-password">
+									<input required type="text" placeholder="username" value="" id="login-username">
+									<input required type="password" placeholder="password" value="" id="login-password">
 								</center>
 							</div>
 							<div class="modal-footer">
+								<p class="status-message" id="login-status-message"></p>
 								<button id="login-button" type="submit" class="std-btn go">Login</button>
 							</div>
 						</form>

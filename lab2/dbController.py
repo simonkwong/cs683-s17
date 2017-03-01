@@ -42,26 +42,36 @@ class DbController():
 					user_id INT(16) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
 					username VARCHAR(128) NOT NULL,
 					salt VARCHAR(128) DEFAULT NULL,
-					hash VARCHAR(128) DEFAULT NULL
+					hash VARCHAR(512) DEFAULT NULL,
+					cookie VARCHAR(512) DEFAULT NULL,
+					public_key VARCHAR(2048) DEFAULT NULL
 					)
 				"""
 
 		self.execute_query(query)
 		return True
 
-	def add_user(self, username, password):
-		salt = salt = binascii.b2a_hex(os.urandom(64))
-		hashed = hashlib.sha512(password + salt).hexdigest()
-
-		query = """ INSERT INTO users (username, salt, hash) VALUES ("%s", "%s", "%s")
-				""" % (username, salt, hashed)
-		user_id = self.execute_query(query)
-		return True
-
-	def verify_user(self, username, password):
-		query = """ SELECT * FROM users WHERE username = "%s"
+	def is_username_available(self, username):
+		query = """ SELECT username FROM users WHERE username = '%s'
 				""" % username
-		user = self.fetch_one(query)
-		if (user["username"] != username):
-			return False
-		return (user["hash"] == hashlib.sha512(password + user["salt"]).hexdigest())
+		return self.fetch_one(query)
+
+	def add_user(self, username, hashed_password, cookie, public_key):
+		if not self.is_username_available(username):
+			# salt = salt = binascii.b2a_hex(os.urandom(64))
+			# hashed = hashlib.sha512(password + salt).hexdigest()
+
+			query = """ INSERT INTO users (username, hash, cookie, public_key) 
+						VALUES ("%s", "%s", "%s", "%s")
+					""" % (username, hashed_password, cookie, public_key)
+			user_id = self.execute_query(query)
+			return True
+		return False
+
+	def verify_user(self, username, hashed_password):
+		if self.is_username_available(username):
+			query = """ SELECT * FROM users WHERE username = "%s"
+					""" % username
+			user = self.fetch_one(query)
+			return (user["hash"] == hashed_password)
+		return False

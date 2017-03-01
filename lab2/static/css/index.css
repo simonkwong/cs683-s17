@@ -9,3 +9,10 @@
 	overflow-y: scroll;
 	padding-right: 0px !important;
 }
+
+.status-message {
+	color: red;
+	font-style: italic;
+	text-align: left;
+	margin-left: 10%;
+}
