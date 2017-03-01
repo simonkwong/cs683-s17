@@ -37,7 +37,7 @@ def register():
 		username = request.form["username"]
 		hashed_password = request.form["password"]
 		public_key = request.files["public_key"]
-		public_key_data = public_key.stream.read()
+		public_key_data = public_key.stream.read().decode('utf-8').strip()
 
 		cur_timestamp = datetime.datetime.now()
 		cookie = hashlib.sha512(app.secret_key + username + hashed_password + str(cur_timestamp)).hexdigest()
@@ -54,11 +54,22 @@ def register():
 @app.route("/login", methods=["POST"])
 def login():
 	if request.method == "POST":
+		db = DbController()
 		expire_date = datetime.datetime.now()
 		expire_date = expire_date + datetime.timedelta(days=config.MAX_LIFE)
 		username = request.form["username"]
 		hashed_password = request.form["password"]
-		db = DbController()
+		hashed_password_1 = app.secret_key
+		private_key = request.files["private_key"]
+		private_key_data = private_key.stream.read()
+		public_key_data = db.get_user_public_key(username)
+
+		private_key = RSA.importKey(open('resources/private.pem', 'r').read())
+		public_key = RSA.importKey(open('resources/public.pem', 'r').read())
+
+		crypt = private_key.decrypt(hashed_password_1)
+		decrypt = public_key.encrypt(crypt, None)
+
 		if db.verify_user(username, hashed_password):
 			cur_timestamp = datetime.datetime.now()
 			cookie = hashlib.sha512(app.secret_key + username + hashed_password + str(cur_timestamp)).hexdigest()
@@ -78,25 +89,6 @@ def logout():
 		response = make_response(redirect("/"))
 		response.set_cookie("username", expires=0)
 		return response
-
-@app.route("/generate", methods=['GET'])
-def generate():
-	if request.method == 'GET':
-
-		private_key = RSA.importKey(open('resources/private.pem', 'r').read())
-		public_key = RSA.importKey(open('resources/public.pem', 'r').read())
-		message = "This is a test. This is a test of the outdoor warning system. This is only a test."
-
-		hashed_message = hashlib.sha512(message).hexdigest()
-		print hashed_message
-
-		crypt = private_key.decrypt(hashed_message)
-		decrypt = public_key.encrypt(crypt, None)
-		print decrypt[0]
-		assert(decrypt[0] == hashed_message)
-
-		return json.dumps({'success' : True, 'message' : 'Key Pair Successfully Generated.'})
-
 
 if __name__ == "__main__":
 	# , ssl_context=('server.crt', 'server.key')

@@ -6,14 +6,14 @@ import binascii
 
 import config
 
-
 class DbController():
 	def __init__(self):
 		self.db = MySQLdb.connect(host=config.DB_INFO['host'],
 								  user=config.DB_INFO['user'],
 								  passwd=config.DB_INFO['password'],
 								  db=config.DB_INFO['database'],
-								  port=config.DB_INFO['port'])
+								  port=config.DB_INFO['port'],
+								  charset='utf8')
 
 	def execute_query(self, query):
 		try:
@@ -45,7 +45,7 @@ class DbController():
 					hash VARCHAR(512) DEFAULT NULL,
 					cookie VARCHAR(512) DEFAULT NULL,
 					public_key VARCHAR(2048) DEFAULT NULL
-					)
+					) ENGINE=InnoDB DEFAULT CHARSET=utf8
 				"""
 
 		self.execute_query(query)
@@ -58,13 +58,10 @@ class DbController():
 
 	def add_user(self, username, hashed_password, cookie, public_key):
 		if not self.is_username_available(username):
-			# salt = salt = binascii.b2a_hex(os.urandom(64))
-			# hashed = hashlib.sha512(password + salt).hexdigest()
-
 			query = """ INSERT INTO users (username, hash, cookie, public_key) 
 						VALUES ("%s", "%s", "%s", "%s")
 					""" % (username, hashed_password, cookie, public_key)
-			user_id = self.execute_query(query)
+			self.execute_query(query)
 			return True
 		return False
 
@@ -75,3 +72,9 @@ class DbController():
 			user = self.fetch_one(query)
 			return (user["hash"] == hashed_password)
 		return False
+
+	def get_user_public_key(self, username):
+		query = """ SELECT public_key FROM users WHERE username = "%s"
+				""" % username
+		public_key = self.fetch_one(query)
+		return public_key.get('public_key')

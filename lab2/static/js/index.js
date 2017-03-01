@@ -1,38 +1,3 @@
-var loginModalComponent = function() {
-
-	var base = this;
-	base.form = $("#loginModalForm");
-
-	base.init = function() {
-		$("#login-button").click(function(e) {
-			e.preventDefault();
-
-			var username = document.getElementById("login-username").value;
-			var password = document.getElementById("login-password").value;
-
-			var hashed_password = sha512(password);
-
-			$.ajax({
-                url: "/login",
-                type: 'POST',
-                data: {
-                    username: username,
-                    password: hashed_password 
-                },
-                complete: function(data, status) {
-                	console.log(data);
-                	var response = JSON.parse(data.statusText);
-					if (Boolean(response.success)) {
-						window.location = "/home";
-					} else {
-						document.getElementById("login-status-message").innerHTML = response.error;
-					}
-                }
-			});
-		});
-	};
-};
-
 var resigterModalComponent = function() {
 	
 	var base = this;
@@ -50,11 +15,10 @@ var resigterModalComponent = function() {
 			$("#register-username").removeAttr('required');
 			$("#register-password").removeAttr('required');
 			$("#confirm-password").removeAttr('required');
-			
-			var userPrivateKey = cryptico.generateRSAKey(RANDOM_PHRASE, RSA_BIT_LENGTH);
-			var userPublicKey = cryptico.publicKeyString(userPrivateKey);
-			userPrivateKey = userPrivateKey.getPrivateKey();
-			userPublicKey = "-----BEGIN PUBLIC KEY-----\r\n" + userPublicKey + "\r\n-----END PUBLIC KEY-----";
+
+			var userKey = new JSEncrypt({default_key_size: RSA_BIT_LENGTH});
+			var userPrivateKey = userKey.getPrivateKey();
+			var userPublicKey = userKey.getPublicKey();
 
 			if (userPrivateKey != null || userPrivateKey != "", userPublicKey != null || userPublicKey != "") {
 				document.getElementById("register-status-message").style.color = "chartreuse";
@@ -121,14 +85,45 @@ var resigterModalComponent = function() {
 	};
 };
 
-var privateKeyString = function(rsakey) {
-	var parametersBigint = ["n", "d", "p", "q", "dmp1", "dmq1", "coeff"];
-    var keyObj = {};
-    parametersBigint.forEach(function(parameter){
-        keyObj[parameter] = cryptico.b16to64(rsakey[parameter].toString(16));
-    });
-    return JSON.stringify(keyObj);
-}	
+var loginModalComponent = function() {
+
+	var base = this;
+	base.form = $("#loginModalForm");
+
+	base.init = function() {
+		$("#login-button").click(function(e) {
+			e.preventDefault();
+
+			var username = document.getElementById("login-username").value;
+			var password = document.getElementById("login-password").value;
+			var private_key_file = $('#add-private-key')[0].files[0];
+
+			var hashed_password = sha512(password);
+			
+			var fd = new FormData();
+			fd.append('private_key', private_key_file);
+			fd.append('username', username);
+			fd.append('password', hashed_password);			
+
+			$.ajax({
+                url: "/login",
+                type: 'POST',
+                data: fd,
+                contentType: false,
+  				processData: false,
+                complete: function(data, status) {
+                	console.log(data);
+                	var response = JSON.parse(data.statusText);
+					if (Boolean(response.success)) {
+						window.location = "/home";
+					} else {
+						document.getElementById("login-status-message").innerHTML = response.error;
+					}
+                }
+			});
+		});
+	};
+};	
 
 $(document).ready(function() {
 
@@ -139,3 +134,13 @@ $(document).ready(function() {
 	resigterModalComponent_.init();
 
 });
+
+var SERVER_PUBLIC_KEY = "-----BEGIN PUBLIC KEY-----\
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA8JsF6x8wEoegggMP1mg5\
+ssQOGXNk2OADrPx5gJY+N2/8DYgc8N2IxTR65d3g7yoloXFcWlyBkdJMt50ugKG/\
+66bJ+9Wb2I7teYoSMXTbhJ0H1Tzmr+aY3M8hSqy8KlT3QEmBwE4izwrO0qfFPXcG\
+kGz+UbKeBs5tL+0cP5AGdj1qFgqrElS+QddPa4R/KNnhoIQKzScCN5WOda82ccQs\
+x57B1+JiFk0WPo97p8pBGwpNxaR6rdmeb4b2amf4X0tdsWDVEsDIdnNzfxzmGfAT\
+4205p+iv08KSDAH1qnh9JKUjsy1fhw/W+P34fO1WPer4jc2/2EGyBQY3SeOuhQEI\
+7wIDAQAB\
+-----END PUBLIC KEY-----"
