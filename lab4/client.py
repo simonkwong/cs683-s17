@@ -75,7 +75,9 @@ def register():
 		response_text = json.loads(response_text)
 		if (response_text['success']):
 			response = make_response(json.dumps({'success' : True}), status.HTTP_200_OK)
-			response.set_cookie("username", value=response_text["cookie"], expires=expire_date)
+			response.set_cookie("username", value=username, expires=expire_date)
+			response.set_cookie("user_cookie", value=response_text["cookie"], expires=expire_date)
+			response.set_cookie("time_stamp", value=response_text["time_stamp"], expires=expire_date)
 			return response
 		else:
 			response = make_response(json.dumps({'success' : False, 'error' : response_text['error']}), status.HTTP_200_OK)
@@ -102,7 +104,9 @@ def login():
 		response_text = json.loads(response_text)
 		if (response_text['success']):
 			response = make_response(json.dumps({'success' : True}), status.HTTP_200_OK)
-			response.set_cookie("username", value=response_text["cookie"], expires=expire_date)
+			response.set_cookie("username", value=username, expires=expire_date)
+			response.set_cookie("user_cookie", value=response_text["cookie"], expires=expire_date)
+			response.set_cookie("time_stamp", value=response_text["time_stamp"], expires=expire_date)
 			return response
 		else:
 			response = make_response(json.dumps(response_text), status.HTTP_200_OK)

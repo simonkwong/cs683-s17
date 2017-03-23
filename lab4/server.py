@@ -16,7 +16,7 @@ import datetime
 app = Flask(__name__)
 app.secret_key = config.SERVER_SECRET
 
-def validate_cookie():
+def validate_cookie(username, user_cookie, timestamp):
 	pass
 
 @app.route("/", methods=["GET"])
@@ -44,12 +44,15 @@ def register():
 		public_key = request.form["public_key"]
 
 		cur_timestamp = datetime.datetime.now()
-		cookie = hashlib.sha512(app.secret_key + username + hashed_password + str(cur_timestamp)).hexdigest()
+		cur_timestamp = str(cur_timestamp)
+		cookie = hashlib.sha512(app.secret_key + username + cur_timestamp).hexdigest()
 
 		db = DbController()
 		if db.add_user(username, hashed_password, cookie, public_key):
-			response = make_response(json.dumps({'success' : True, 'cookie' : cookie}), status.HTTP_200_OK)
-			response.set_cookie("username", value=cookie, expires=expire_date)
+			response = make_response(json.dumps({'success' : True, 'cookie' : cookie, 'time_stamp': cur_timestamp}), status.HTTP_200_OK)
+			response.set_cookie("username", value=username, expires=expire_date)
+			response.set_cookie("user_cookie", value=cookie, expires=expire_date)
+			response.set_cookie("time_stamp", value=cur_timestamp, expires=expire_date)
 			return response
 		else :
 			response = make_response(json.dumps({'success' : False, 'error' : 'Username Is Already In Use.'}), status.HTTP_200_OK)
@@ -78,9 +81,12 @@ def login():
 
 			if db.verify_user(username, hashed_password):
 				cur_timestamp = datetime.datetime.now()
-				cookie = hashlib.sha512(app.secret_key + username + hashed_password + str(cur_timestamp)).hexdigest()
-				response = make_response(json.dumps({'success' : True, "cookie": cookie}), status.HTTP_200_OK)
-				response.set_cookie("username", value=cookie, expires=expire_date)
+				cur_timestamp = str(cur_timestamp)
+				cookie = hashlib.sha512(app.secret_key + username + cur_timestamp).hexdigest()
+				response = make_response(json.dumps({'success' : True, "cookie": cookie, 'time_stamp': cur_timestamp}), status.HTTP_200_OK)
+				response.set_cookie("username", value=username, expires=expire_date)
+				response.set_cookie("user_cookie", value=cookie, expires=expire_date)
+				response.set_cookie("time_stamp", value=cur_timestamp, expires=expire_date)
 				return response
 			else :
 				response = make_response(json.dumps({'success' : False, 'error' : 'Incorrect Password'}), status.HTTP_200_OK)
@@ -92,6 +98,8 @@ def logout():
 	if request.method == "GET":
 		response = make_response(redirect("/"))
 		response.set_cookie("username", expires=0)
+		response.set_cookie("user_cookie", expires=0)
+		response.set_cookie("time_stamp", expires=0)
 		return response
 
 if __name__ == "__main__":
