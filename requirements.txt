@@ -22,3 +22,5 @@ click==6.7
 dpkt==1.8.8
 pycrypto==2.6.1
 rsa==3.4.2
+Flask-API==0.6.9
+
