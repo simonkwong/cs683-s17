@@ -104,4 +104,6 @@ def logout():
 
 if __name__ == "__main__":
 	# , ssl_context=('server.crt', 'server.key')
-	app.run(config.HOST, config.SERVER_PORT)
+	db = DbController()
+	db.create_user_table()
+	app.run(config.SERVER_HOST, config.SERVER_PORT)

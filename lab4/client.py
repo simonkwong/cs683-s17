@@ -4,7 +4,6 @@ from OpenSSL import SSL
 from Crypto.PublicKey import RSA
 from Crypto.Cipher import PKCS1_v1_5
 
-from dbController import DbController
 import config
 
 import json
@@ -22,7 +21,7 @@ headers = {"Content-type": "application/x-www-form-urlencoded", "Accept": "text/
 def get_server_response(url, html, data):
 	data = urllib.urlencode(data)
 
-	server_connection = httplib.HTTPConnection(config.HOST, config.SERVER_PORT)
+	server_connection = httplib.HTTPConnection(config.CLIENT_HOST, config.SERVER_PORT)
 	server_connection.request("GET", url, data, headers)
 	response = server_connection.getresponse()
 	response_text = response.read()
@@ -33,7 +32,7 @@ def get_server_response(url, html, data):
 def post_server_response(url, data):
 	data = urllib.urlencode(data)
 
-	server_connection = httplib.HTTPConnection(config.HOST, config.SERVER_PORT)
+	server_connection = httplib.HTTPConnection(config.CLIENT_HOST, config.SERVER_PORT)
 	server_connection.request("POST", url, data, headers)
 	response = server_connection.getresponse()
 	response_headers = response.getheaders()
@@ -43,8 +42,6 @@ def post_server_response(url, data):
 @app.route("/", methods=["GET"])
 def welcome():
 	if request.method == "GET":
-		db = DbController()
-		db.create_user_table()
 		if request.cookies.get("username"):
 			return redirect("/home")
 		return render_template("/html/index.html")
@@ -121,4 +118,4 @@ def logout():
 
 if __name__ == "__main__":
 	# , ssl_context=('server.crt', 'server.key')
-	app.run(config.HOST, config.CLIENT_PORT)
+	app.run(config.SERVER_HOST, config.CLIENT_PORT)
