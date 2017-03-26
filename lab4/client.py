@@ -42,20 +42,28 @@ def post_server_response(url, data):
 @app.route("/", methods=["GET"])
 def welcome():
 	if request.method == "GET":
-		if request.cookies.get("username"):
+		if request.cookies.get("username") and request.cookies.get("user_cookie") and request.cookies.get("time_stamp"):
 			return redirect("/home")
 		return render_template("/html/index.html")
 
 @app.route("/home", methods=["GET"])
 def homepage():
 	if request.method == "GET":
-		print request.cookies.get("username")
-		if not request.cookies.get("username"):
+		username = request.cookies.get("username")
+		user_cookie = request.cookies.get("user_cookie")
+		time_stamp = request.cookies.get("time_stamp")
+		if not (username and user_cookie and time_stamp):
 			return redirect("/")
-		data = {"username": request.cookies.get("username")}
+		data = {"username": username, 
+				"user_cookie": user_cookie, 
+				"time_stamp": time_stamp}
 		response_text = post_server_response("/home", data)
-		return render_template("/html/homepage.html")
-
+		response_text = json.loads(response_text)
+		if response_text['success']:
+			return render_template("/html/homepage.html")
+		else:
+			# return redirect("/")
+			pass
 
 @app.route("/register", methods=["POST"])
 def register():	
@@ -112,10 +120,16 @@ def login():
 @app.route("/logout", methods=["GET"])
 def logout():
 	if request.method == "GET":
-		response = make_response(redirect("/"))
-		response.set_cookie("username", expires=0)
-		return response
+		data = {}
+		response_text = post_server_response("/logout", data)
+		response_text = json.loads(response_text)
+		if (response_text['success']):
+			response = make_response(redirect("/"))
+			response.set_cookie("username", expires=0)
+			response.set_cookie("user_cookie", expires=0)
+			response.set_cookie("time_stamp", expires=0)
+			return response
 
 if __name__ == "__main__":
-	# , ssl_context=('server.crt', 'server.key')
+	# app.run(config.SERVER_HOST, config.CLIENT_PORT, ssl_context=('server.crt', 'server.key'))
 	app.run(config.SERVER_HOST, config.CLIENT_PORT)

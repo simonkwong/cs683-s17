@@ -84,3 +84,18 @@ class DbController():
 				""" % username
 		public_key = self.fetch_one(query)
 		return public_key.get('public_key')
+
+	def update_cookie(self, username, cookie):
+		if self.is_username_available(username):
+			query = """ UPDATE users SET cookie = "%s" WHERE username = "%s"
+					""" % (cookie, username)
+			self.execute_query(query)
+			return True
+		return False
+
+	def get_cookie(self, username):
+		if self.is_username_available(username):
+			query = """ SELECT cookie FROM users WHERE username = "%s"
+					""" % username
+			return self.fetch_one(query)
+		return None

@@ -16,23 +16,38 @@ import datetime
 app = Flask(__name__)
 app.secret_key = config.SERVER_SECRET
 
-def validate_cookie(username, user_cookie, timestamp):
-	pass
+def validate_cookie(username, user_cookie, time_stamp):
+	db = DbController()
+	stored_user_cookie = db.get_cookie(username)
+	if stored_user_cookie is not None:
+		stored_user_cookie = stored_user_cookie['cookie']
+	else:
+		return False
+
+	validating_cookie = hashlib.sha512(app.secret_key + username + time_stamp).hexdigest()
+
+	if (str(stored_user_cookie) == str(user_cookie)) and (str(stored_user_cookie) == validating_cookie):
+		return True
+	return False
 
 @app.route("/", methods=["GET"])
 def welcome():
 	if request.method == "GET":
-		if request.cookies.get("username"):
+		if request.cookies.get("username") and request.cookies.get("user_cookie") and request.cookies.get("time_stamp"):
 			return redirect("/home")
 		return render_template("/html/index.html")
 
 @app.route("/home", methods=["POST"])
 def homepage():
 	if request.method == "POST":
-		print request.form["username"]
-		if not request.form["username"]:
-			return redirect("/")
-		return render_template("/html/homepage.html")
+		username = request.form["username"]
+		user_cookie = request.form["user_cookie"]
+		time_stamp = request.form["time_stamp"]
+		if not (username and user_cookie and time_stamp):
+			return make_response(json.dumps({'success': False}), status.HTTP_200_OK)
+		if validate_cookie(username, user_cookie, time_stamp):
+			return make_response(json.dumps({'success': True}), status.HTTP_200_OK)
+		return make_response(json.dumps({'success': False}), status.HTTP_200_OK)
 
 @app.route("/register", methods=["POST"])
 def register():	
@@ -83,6 +98,7 @@ def login():
 				cur_timestamp = datetime.datetime.now()
 				cur_timestamp = str(cur_timestamp)
 				cookie = hashlib.sha512(app.secret_key + username + cur_timestamp).hexdigest()
+				db.update_cookie(username, cookie)
 				response = make_response(json.dumps({'success' : True, "cookie": cookie, 'time_stamp': cur_timestamp}), status.HTTP_200_OK)
 				response.set_cookie("username", value=username, expires=expire_date)
 				response.set_cookie("user_cookie", value=cookie, expires=expire_date)
@@ -93,10 +109,10 @@ def login():
 				return response
 
 
-@app.route("/logout", methods=["GET"])
+@app.route("/logout", methods=["POST"])
 def logout():
-	if request.method == "GET":
-		response = make_response(redirect("/"))
+	if request.method == "POST":
+		response = make_response(json.dumps({'success': True}), status.HTTP_200_OK)
 		response.set_cookie("username", expires=0)
 		response.set_cookie("user_cookie", expires=0)
 		response.set_cookie("time_stamp", expires=0)
