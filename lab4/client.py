@@ -120,7 +120,10 @@ def login():
 @app.route("/logout", methods=["GET"])
 def logout():
 	if request.method == "GET":
-		data = {}
+		username = request.cookies.get("username")
+		user_cookie = request.cookies.get("user_cookie")
+		time_stamp = request.cookies.get("time_stamp")
+		data = {"username": username, "user_cookie": user_cookie, "time_stamp": time_stamp}
 		response_text = post_server_response("/logout", data)
 		response_text = json.loads(response_text)
 		if (response_text['success']):
@@ -131,5 +134,5 @@ def logout():
 			return response
 
 if __name__ == "__main__":
-	# app.run(config.SERVER_HOST, config.CLIENT_PORT, ssl_context=('server.crt', 'server.key'))
-	app.run(config.SERVER_HOST, config.CLIENT_PORT)
+	app.run(config.SERVER_HOST, config.CLIENT_PORT, ssl_context=('server.crt', 'server.key'))
+	# app.run(config.SERVER_HOST, config.CLIENT_PORT)

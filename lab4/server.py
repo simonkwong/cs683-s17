@@ -112,6 +112,11 @@ def login():
 @app.route("/logout", methods=["POST"])
 def logout():
 	if request.method == "POST":
+		db = DbController()
+		username = request.form["username"]
+		user_cookie = request.form["user_cookie"]
+		time_stamp = request.form["time_stamp"]
+		db.update_cookie(username, "")
 		response = make_response(json.dumps({'success': True}), status.HTTP_200_OK)
 		response.set_cookie("username", expires=0)
 		response.set_cookie("user_cookie", expires=0)
