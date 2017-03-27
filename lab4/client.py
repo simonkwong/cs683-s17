@@ -11,7 +11,9 @@ import base64
 import urllib
 import hashlib
 import httplib
-import datetime
+from datetime import datetime, timedelta
+import random
+import sys
 
 app = Flask(__name__)
 app.secret_key = config.CLIENT_SECRET
@@ -68,8 +70,6 @@ def homepage():
 @app.route("/register", methods=["POST"])
 def register():	
 	if request.method == "POST":
-		expire_date = datetime.datetime.now()
-		expire_date = expire_date + datetime.timedelta(days=0, seconds=config.MAX_LIFE)
 		username = request.form["username"]
 		hashed_password = request.form["password"]
 		public_key = request.files["public_key"]
@@ -79,6 +79,8 @@ def register():
 		response_text = post_server_response("/register", data)
 		response_text = json.loads(response_text)
 		if (response_text['success']):
+			expire_date = response_text["expire_date"]
+			expire_date = datetime.strptime(expire_date, "%Y-%m-%d %H:%M:%S.%f")
 			response = make_response(json.dumps({'success' : True}), status.HTTP_200_OK)
 			response.set_cookie("username", value=username, expires=expire_date)
 			response.set_cookie("user_cookie", value=response_text["cookie"], expires=expire_date)
@@ -91,8 +93,6 @@ def register():
 @app.route("/login", methods=["POST"])
 def login():
 	if request.method == "POST":
-		expire_date = datetime.datetime.now()
-		expire_date = expire_date + datetime.timedelta(days=0, seconds=config.MAX_LIFE)
 		username = request.form["username"]
 		hashed_password = request.form["password"]
 		private_key = request.files["private_key"]
@@ -100,14 +100,21 @@ def login():
 		private_key = private_key.encode('ascii', 'ignore')
 		private_key = RSA.importKey(private_key)
 
-		hashed_password = hashed_password.encode("utf-8") #str
-		encrypted_hashed_password = private_key.decrypt(hashed_password)
+		hashed_password = hashed_password.encode("utf-8")
+
+		random.seed(683)
+		nonce = random.randint(1, sys.maxint)
+
+		encrypted_hashed_password = private_key.decrypt(hashed_password + nonce)
 		encrypted_hashed_password = base64.b64encode(encrypted_hashed_password)
 
 		data = {"username": username, "password": encrypted_hashed_password}
 		response_text = post_server_response("/login", data)
 		response_text = json.loads(response_text)
 		if (response_text['success']):
+			expire_date = response_text["expire_date"]
+			expire_date = datetime.strptime(expire_date, "%Y-%m-%d %H:%M:%S.%f")
+			expire_date = response_text["expire_date"]
 			response = make_response(json.dumps({'success' : True}), status.HTTP_200_OK)
 			response.set_cookie("username", value=username, expires=expire_date)
 			response.set_cookie("user_cookie", value=response_text["cookie"], expires=expire_date)

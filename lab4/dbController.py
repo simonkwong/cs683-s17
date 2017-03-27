@@ -52,6 +52,15 @@ class DbController():
 		self.execute_query(query)
 		return True
 
+	def create_nonce_table(self):
+		query = """ CREATE TABLE IF NOT EXISTS nonces (
+					nonce_id INT(16) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+					nonce BIGINT(32) UNSIGNED NOT NULL
+					) ENGINE=InnoDB DEFAULT CHARSET=utf8
+				"""
+		self.execute_query(query)
+		return True
+
 	def is_username_available(self, username):
 		query = """ SELECT username FROM users WHERE username = '%s'
 				""" % username
@@ -100,3 +109,6 @@ class DbController():
 					""" % username
 			return self.fetch_one(query)
 		return None
+
+	def verify_nonce(self, nonce):
+		pass

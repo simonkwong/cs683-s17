@@ -11,7 +11,7 @@ import json
 import base64
 import urllib
 import hashlib
-import datetime
+from datetime import datetime, timedelta
 
 app = Flask(__name__)
 app.secret_key = config.SERVER_SECRET
@@ -20,13 +20,13 @@ def validate_cookie(username, user_cookie, time_stamp):
 	db = DbController()
 	stored_user_cookie = db.get_cookie(username)
 	if stored_user_cookie is not None:
-		print stored_user_cookie
 		stored_time_stamp = stored_user_cookie['time_stamp']
 		stored_user_cookie = stored_user_cookie['cookie']
 	else:
 		return False
 
-	validating_cookie = hashlib.sha512(app.secret_key + username + time_stamp).hexdigest()
+	time_stamp = datetime.strptime(time_stamp, "%Y-%m-%d %H:%M:%S.%f")
+	validating_cookie = hashlib.sha512(app.secret_key + username + str(time_stamp)).hexdigest()
 
 	if (str(stored_user_cookie) == str(user_cookie)) and (str(stored_user_cookie) == validating_cookie):
 		return True
@@ -54,19 +54,19 @@ def homepage():
 @app.route("/register", methods=["POST"])
 def register():	
 	if request.method == "POST":
-		expire_date = datetime.datetime.now()
-		expire_date = expire_date + datetime.timedelta(days=0, seconds=config.MAX_LIFE)
+		expire_date = datetime.now()
+		expire_date = expire_date + timedelta(days=0, seconds=config.MAX_LIFE)
 		username = request.form["username"]
 		hashed_password = request.form["password"]
 		public_key = request.form["public_key"]
 
-		cur_timestamp = datetime.datetime.now()
+		cur_timestamp = datetime.now()
 		cur_timestamp = str(cur_timestamp)
 		cookie = hashlib.sha512(app.secret_key + username + cur_timestamp).hexdigest()
 
 		db = DbController()
 		if db.add_user(username, hashed_password, cookie, cur_timestamp, public_key):
-			response = make_response(json.dumps({'success' : True, 'cookie' : cookie, 'time_stamp': cur_timestamp}), status.HTTP_200_OK)
+			response = make_response(json.dumps({'success' : True, 'cookie' : cookie, 'time_stamp': cur_timestamp, 'expire_date': str(expire_date)}), status.HTTP_200_OK)
 			response.set_cookie("username", value=username, expires=expire_date)
 			response.set_cookie("user_cookie", value=cookie, expires=expire_date)
 			response.set_cookie("time_stamp", value=cur_timestamp, expires=expire_date)
@@ -79,8 +79,8 @@ def register():
 def login():
 	if request.method == "POST":
 		db = DbController()
-		expire_date = datetime.datetime.now()
-		expire_date = expire_date + datetime.timedelta(days=0, seconds=config.MAX_LIFE)
+		expire_date = datetime.now()
+		expire_date = expire_date + timedelta(days=0, seconds=config.MAX_LIFE)
 		username = request.form["username"]
 		encrypted_hashed_password = request.form["password"]
 
@@ -97,11 +97,11 @@ def login():
 			hashed_password = hashed_password[0]
 
 			if db.verify_user(username, hashed_password):
-				cur_timestamp = datetime.datetime.now()
+				cur_timestamp = datetime.now()
 				cur_timestamp = str(cur_timestamp)
 				cookie = hashlib.sha512(app.secret_key + username + cur_timestamp).hexdigest()
 				db.update_cookie(username, cookie, cur_timestamp)
-				response = make_response(json.dumps({'success' : True, "cookie": cookie, 'time_stamp': cur_timestamp}), status.HTTP_200_OK)
+				response = make_response(json.dumps({'success' : True, "cookie": cookie, 'time_stamp': cur_timestamp, 'expire_date': str(expire_date)}), status.HTTP_200_OK)
 				response.set_cookie("username", value=username, expires=expire_date)
 				response.set_cookie("user_cookie", value=cookie, expires=expire_date)
 				response.set_cookie("time_stamp", value=cur_timestamp, expires=expire_date)
@@ -128,4 +128,5 @@ def logout():
 if __name__ == "__main__":
 	db = DbController()
 	db.create_user_table()
+	db.create_nonce_table()
 	app.run(config.SERVER_HOST, config.SERVER_PORT)
