@@ -20,6 +20,8 @@ def validate_cookie(username, user_cookie, time_stamp):
 	db = DbController()
 	stored_user_cookie = db.get_cookie(username)
 	if stored_user_cookie is not None:
+		print stored_user_cookie
+		stored_time_stamp = stored_user_cookie['time_stamp']
 		stored_user_cookie = stored_user_cookie['cookie']
 	else:
 		return False
@@ -53,7 +55,7 @@ def homepage():
 def register():	
 	if request.method == "POST":
 		expire_date = datetime.datetime.now()
-		expire_date = expire_date + datetime.timedelta(days=config.MAX_LIFE)
+		expire_date = expire_date + datetime.timedelta(days=0, seconds=config.MAX_LIFE)
 		username = request.form["username"]
 		hashed_password = request.form["password"]
 		public_key = request.form["public_key"]
@@ -63,7 +65,7 @@ def register():
 		cookie = hashlib.sha512(app.secret_key + username + cur_timestamp).hexdigest()
 
 		db = DbController()
-		if db.add_user(username, hashed_password, cookie, public_key):
+		if db.add_user(username, hashed_password, cookie, cur_timestamp, public_key):
 			response = make_response(json.dumps({'success' : True, 'cookie' : cookie, 'time_stamp': cur_timestamp}), status.HTTP_200_OK)
 			response.set_cookie("username", value=username, expires=expire_date)
 			response.set_cookie("user_cookie", value=cookie, expires=expire_date)
@@ -78,7 +80,7 @@ def login():
 	if request.method == "POST":
 		db = DbController()
 		expire_date = datetime.datetime.now()
-		expire_date = expire_date + datetime.timedelta(days=config.MAX_LIFE)
+		expire_date = expire_date + datetime.timedelta(days=0, seconds=config.MAX_LIFE)
 		username = request.form["username"]
 		encrypted_hashed_password = request.form["password"]
 
@@ -98,7 +100,7 @@ def login():
 				cur_timestamp = datetime.datetime.now()
 				cur_timestamp = str(cur_timestamp)
 				cookie = hashlib.sha512(app.secret_key + username + cur_timestamp).hexdigest()
-				db.update_cookie(username, cookie)
+				db.update_cookie(username, cookie, cur_timestamp)
 				response = make_response(json.dumps({'success' : True, "cookie": cookie, 'time_stamp': cur_timestamp}), status.HTTP_200_OK)
 				response.set_cookie("username", value=username, expires=expire_date)
 				response.set_cookie("user_cookie", value=cookie, expires=expire_date)
@@ -116,7 +118,7 @@ def logout():
 		username = request.form["username"]
 		user_cookie = request.form["user_cookie"]
 		time_stamp = request.form["time_stamp"]
-		db.update_cookie(username, "")
+		db.update_cookie(username, "", time_stamp)
 		response = make_response(json.dumps({'success': True}), status.HTTP_200_OK)
 		response.set_cookie("username", expires=0)
 		response.set_cookie("user_cookie", expires=0)
@@ -124,7 +126,6 @@ def logout():
 		return response
 
 if __name__ == "__main__":
-	# , ssl_context=('server.crt', 'server.key')
 	db = DbController()
 	db.create_user_table()
 	app.run(config.SERVER_HOST, config.SERVER_PORT)

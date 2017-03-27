@@ -69,7 +69,7 @@ def homepage():
 def register():	
 	if request.method == "POST":
 		expire_date = datetime.datetime.now()
-		expire_date = expire_date + datetime.timedelta(days=config.MAX_LIFE)
+		expire_date = expire_date + datetime.timedelta(days=0, seconds=config.MAX_LIFE)
 		username = request.form["username"]
 		hashed_password = request.form["password"]
 		public_key = request.files["public_key"]
@@ -92,7 +92,7 @@ def register():
 def login():
 	if request.method == "POST":
 		expire_date = datetime.datetime.now()
-		expire_date = expire_date + datetime.timedelta(days=config.MAX_LIFE)
+		expire_date = expire_date + datetime.timedelta(days=0, seconds=config.MAX_LIFE)
 		username = request.form["username"]
 		hashed_password = request.form["password"]
 		private_key = request.files["private_key"]

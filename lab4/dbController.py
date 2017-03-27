@@ -44,6 +44,7 @@ class DbController():
 					salt VARCHAR(128) DEFAULT NULL,
 					hash VARCHAR(1024) DEFAULT NULL,
 					cookie VARCHAR(1024) DEFAULT NULL,
+					time_stamp VARCHAR(128) DEFAULT NULL,
 					public_key VARCHAR(2048) DEFAULT NULL
 					) ENGINE=InnoDB DEFAULT CHARSET=utf8
 				"""
@@ -56,11 +57,11 @@ class DbController():
 				""" % username
 		return self.fetch_one(query)
 
-	def add_user(self, username, hashed_password, cookie, public_key):
+	def add_user(self, username, hashed_password, cookie, time_stamp, public_key):
 		if not self.is_username_available(username):
-			query = """ INSERT INTO users (username, hash, cookie, public_key) 
-						VALUES ("%s", "%s", "%s", "%s")
-					""" % (username, hashed_password, cookie, public_key)
+			query = """ INSERT INTO users (username, hash, cookie, public_key, time_stamp) 
+						VALUES ("%s", "%s", "%s", "%s", "%s")
+					""" % (username, hashed_password, cookie, public_key, time_stamp)
 			self.execute_query(query)
 			return True
 		return False
@@ -85,17 +86,17 @@ class DbController():
 		public_key = self.fetch_one(query)
 		return public_key.get('public_key')
 
-	def update_cookie(self, username, cookie):
+	def update_cookie(self, username, cookie, time_stamp):
 		if self.is_username_available(username):
-			query = """ UPDATE users SET cookie = "%s" WHERE username = "%s"
-					""" % (cookie, username)
+			query = """ UPDATE users SET cookie = "%s", time_stamp = "%s" WHERE username = "%s"
+					""" % (cookie, time_stamp, username)
 			self.execute_query(query)
 			return True
 		return False
 
 	def get_cookie(self, username):
 		if self.is_username_available(username):
-			query = """ SELECT cookie FROM users WHERE username = "%s"
+			query = """ SELECT cookie, time_stamp FROM users WHERE username = "%s"
 					""" % username
 			return self.fetch_one(query)
 		return None
