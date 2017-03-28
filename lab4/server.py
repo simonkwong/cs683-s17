@@ -41,7 +41,7 @@ def validate_cookie(username, user_cookie, time_stamp):
 @app.route("/", methods=["GET"])
 def welcome():
 	if request.method == "GET":
-		if request.cookies.get("username") and request.cookies.get("user_cookie") and request.cookies.get("time_stamp"):
+		if request.cookies.get("cookie_data"):
 			return redirect("/home")
 		return render_template("/html/index.html")
 
@@ -73,9 +73,9 @@ def register():
 		db = DbController()
 		if db.add_user(username, hashed_password, cookie, cur_timestamp, public_key):
 			response = make_response(json.dumps({'success' : True, 'cookie' : cookie, 'time_stamp': cur_timestamp, 'expire_date': str(expire_date)}), status.HTTP_200_OK)
-			response.set_cookie("username", value=username, expires=expire_date, max_age=config.MAX_LIFE)
-			response.set_cookie("user_cookie", value=cookie, expires=expire_date, max_age=config.MAX_LIFE)
-			response.set_cookie("time_stamp", value=cur_timestamp, expires=expire_date, max_age=config.MAX_LIFE)
+			
+			cookie_data = {"username": username, "user_cookie": cookie, "time_stamp": cur_timestamp}
+			response.set_cookie("cookie_data", value=json.dumps(cookie_data), expires=expire_date, max_age=config.MAX_LIFE)
 			return response
 		else :
 			response = make_response(json.dumps({'success' : False, 'error' : 'Username Is Already In Use.'}), status.HTTP_200_OK)
@@ -118,9 +118,10 @@ def login():
 				cookie = hashlib.sha512(app.secret_key + username + cur_timestamp).hexdigest()
 				db.update_cookie(username, cookie, cur_timestamp)
 				response = make_response(json.dumps({'success' : True, "cookie": cookie, 'time_stamp': cur_timestamp, 'expire_date': str(expire_date)}), status.HTTP_200_OK)
-				response.set_cookie("username", value=username, expires=expire_date, max_age=config.MAX_LIFE)
-				response.set_cookie("user_cookie", value=cookie, expires=expire_date, max_age=config.MAX_LIFE)
-				response.set_cookie("time_stamp", value=cur_timestamp, expires=expire_date, max_age=config.MAX_LIFE)
+				
+				cookie_data = {"username": username, "user_cookie": cookie, "time_stamp": cur_timestamp}
+				response.set_cookie("cookie_data", value=json.dumps(cookie_data), expires=expire_date, max_age=config.MAX_LIFE)
+
 				return response
 			else :
 				response = make_response(json.dumps({'success' : False, 'error' : 'Incorrect Password'}), status.HTTP_200_OK)
@@ -136,9 +137,7 @@ def logout():
 		time_stamp = request.form["time_stamp"]
 		db.update_cookie(username, "", time_stamp)
 		response = make_response(json.dumps({'success': True}), status.HTTP_200_OK)
-		response.set_cookie("username", expires=0)
-		response.set_cookie("user_cookie", expires=0)
-		response.set_cookie("time_stamp", expires=0)
+		response.set_cookie("cookie_data", expires=0)
 		return response
 
 if __name__ == "__main__":
