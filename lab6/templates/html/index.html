@@ -1,0 +1,146 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <title>Simon's Domain</title>
+
+
+        <link rel="SHORTCUT ICON" type="image/x-icon" href="{{ url_for('static', filename='images/favicons/favicon-96x96.png') }}"/>
+
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+		<script src="https://use.fontawesome.com/d9dd0c4d7a.js"></script>
+		<script type="text/javascript" src="{{ url_for('static', filename='js/index.js') }}"></script>
+		
+		<!-- HASH SHA512 LIBRARY -->
+		<script type="text/javascript" src="{{ url_for('static', filename='js/js-sha512.js') }}"></script>
+
+		<!-- CRYPTICO ENCRYPTION AND DECRYPTION LIBRARY -->
+		<script type="text/javascript" src="{{ url_for('static', filename='js/cryptico/jsbn.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/cryptico/random.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/cryptico/hash.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/cryptico/rsa.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/cryptico/aes.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/cryptico/api.js') }}"></script>
+
+        <!-- JSENCRYPT ENCRYPTION AND DECRYPTION LIBRARY -->
+        <script type="text/javascript" src="{{ url_for('static', filename='js/jsencrypt/asn1js/asn1.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/jsencrypt/asn1js/base64.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/jsencrypt/asn1js/hex.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/jsencrypt/asn1js/oids.js') }}"></script>
+
+        <script type="text/javascript" src="{{ url_for('static', filename='js/jsencrypt/jsbn/base64.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/jsencrypt/jsbn/jsbn.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/jsencrypt/jsbn/jsbn2.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/jsencrypt/jsbn/prng4.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/jsencrypt/jsbn/rng.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/jsencrypt/jsbn/rsa-async.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/jsencrypt/jsbn/rsa.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/jsencrypt/jsbn/rsa2.js') }}"></script>
+
+        <script type="text/javascript" src="{{ url_for('static', filename='js/jsencrypt/jsrsasign/asn1-1.0.js') }}"></script>
+
+        <script type="text/javascript" src="{{ url_for('static', filename='js/jsencrypt/jsencrypt.js') }}"></script>
+
+        <!-- FILESAVER LIBRARY -->
+		<script type="text/javascript" src="{{ url_for('static', filename='js/file-saver/FileSaver.js') }}"></script>
+		<script type="text/javascript" src="{{ url_for('static', filename='js/file-saver/FileSaver.min.js') }}"></script>
+
+
+    </head>
+
+    <body>
+
+    	<h1>Welcome!</h1>
+
+		<a href="" data-toggle="modal" data-target="#chatBobModal"><i class="fa fa-sign-in fa-5x"></i>CHAT WITH BOB</a> <br>
+
+		<a href="" data-toggle="modal" data-target="#mitmModal"><i class="fa fa-sign-in fa-5x"></i>WHERE'S CHARLIE?</a> <br>
+
+		<div class="modal fade" id="chatBobModal">
+			<div class="modal-dialog" role="document">
+		    	<div class="modal-content">
+			    	<div class="gen-container">
+			    	    <form id="chatBobModalForm">
+							<div class="modal-header">
+								<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+								<h4 class="modal-title" id="myModalLabel">UPLOAD PEM KEYS</h4>
+								<h5>Chat With Bob</h5>
+							</div>
+							<div class="form-element-row">
+								<center>
+									<label for="bob-name">Enter Your Name</label>
+									<input required type="text" id="bob-name"><br>
+
+									<label for="bob-private-key">Upload Your Private Key</label>
+									<input required type="file" id="bob-private-key" accept=".pem">
+
+									<label for="bob-public-key">Upload Your Public Key</label>
+									<input required type="file" id="bob-public-key" accept=".pem">
+
+									<label for="bob-bob-public-key">Upload Bob's Public Key</label>
+									<input required type="file" id="bob-bob-public-key">
+
+									Don't Have A Key Pair?
+									<button id="generate-keypair">Generate KeyPair</button>
+								</center>
+							</div>
+							<div class="modal-footer">
+								<p class="status-message" id="bob-status-message"></p>
+								<button id="bob-button" type="submit" class="std-btn go">Chat With Bob</button>
+							</div>
+						</form>
+			    	</div>
+		    	</div>
+		  	</div>
+		</div>
+
+		<div class="modal fade" id="mitmModal">
+			<div class="modal-dialog" role="document">
+		    	<div class="modal-content">
+			    	<div class="gen-container">
+			    	    <form id="mitmModalForm">
+							<div class="modal-header">
+								<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+								<h4 class="modal-title" id="myModalLabel">UPLOAD PEM KEYS</h4>
+								<h5>Chat With Bob. Where's Charlie?</h5>
+							</div>
+							<div class="form-element-row">
+								<center>
+									<label for="mitm-name">Enter Your Name</label>
+									<input required type="text" id="mitm-name"><br>
+
+									<label for="mitm-private-key">Upload Your Private Key</label>
+									<input required type="file" id="mitm-private-key" accept=".pem">
+
+									<label for="mitm-public-key">Upload Your Public Key</label>
+									<input required type="file" id="mitm-public-key" accept=".pem">
+
+									<label for="mitm-bob-public-key">Upload Bob's Public Key</label>
+									<input required type="file" id="mitm-bob-public-key">
+
+									<label for="mitm-charlie-public-key">Upload Charlie's Public Key</label>
+									<input required type="file" id="mitm-charlie-public-key">
+
+									Don't Have A Key Pair?
+									<button id="generate-keypair">Generate KeyPair</button>
+								</center>
+							</div>
+							<div class="modal-footer">
+								<p class="status-message" id="mitm-status-message"></p>
+								<button id="mitm-button" type="submit" class="std-btn go">Upload</button>
+							</div>
+						</form>
+			    	</div>
+		    	</div>
+		  	</div>
+		</div>
+
+    </body>
+</html>
