@@ -46,7 +46,14 @@ def welcome():
 	if request.method == "GET":
 		if request.cookies.get("cookie_data"):
 			return redirect("/home")
-		return render_template("/html/index.html")
+		data = {}
+		response_text = post_server_response('/', data)
+		response_text = json.loads(response_text)
+
+		if response_text['success']:
+			response = make_response(render_template("/html/index.html"))
+			response.set_cookie("nonce", value=response_text['nonce'])
+			return response
 
 @app.route("/home", methods=["GET"])
 def homepage():
@@ -111,8 +118,7 @@ def login():
 
 		hashed_password = hashed_password.encode("utf-8")
 
-		random.seed(random.randint(1, sys.maxint))
-		nonce = random.randint(1, sys.maxint)
+		nonce = request.cookies.get("nonce")
 		hashed_password_with_nonce = hashlib.sha512(hashed_password + str(nonce)).hexdigest()
 		login_message = json.dumps({'encrypted_hashed_password': hashed_password_with_nonce, 'nonce': nonce})
 
@@ -141,17 +147,19 @@ def login():
 def logout():
 	if request.method == "GET":
 		cookie_data = request.cookies.get("cookie_data")
-		cookie_data = json.loads(cookie_data)
-		username = cookie_data['username']
-		user_cookie = cookie_data['user_cookie']
-		time_stamp = cookie_data['time_stamp']
-		data = {"username": username, "user_cookie": user_cookie, "time_stamp": time_stamp}
-		response_text = post_server_response("/logout", data)
-		response_text = json.loads(response_text)
-		if (response_text['success']):
-			response = make_response(redirect("/"))
-			response.set_cookie("cookie_data", expires=0)
-			return response
+		if cookie_data is not None:
+			cookie_data = json.loads(cookie_data)
+			username = cookie_data['username']
+			user_cookie = cookie_data['user_cookie']
+			time_stamp = cookie_data['time_stamp']
+			data = {"username": username, "user_cookie": user_cookie, "time_stamp": time_stamp}
+			response_text = post_server_response("/logout", data)
+			response_text = json.loads(response_text)
+			if (response_text['success']):
+				response = make_response(redirect("/"))
+				response.set_cookie("cookie_data", expires=0)
+				return response
+		return redirect("/")
 
 if __name__ == "__main__":
 	app.run(config.SERVER_HOST, config.CLIENT_PORT, ssl_context=('server.crt', 'server.key'))

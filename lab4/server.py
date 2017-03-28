@@ -12,6 +12,8 @@ import base64
 import urllib
 import hashlib
 from datetime import datetime, timedelta
+import random
+import sys
 
 app = Flask(__name__)
 app.secret_key = config.SERVER_SECRET
@@ -38,12 +40,18 @@ def validate_cookie(username, user_cookie, time_stamp):
 		return True
 	return False
 
-@app.route("/", methods=["GET"])
+@app.route("/", methods=["POST"])
 def welcome():
-	if request.method == "GET":
-		if request.cookies.get("cookie_data"):
-			return redirect("/home")
-		return render_template("/html/index.html")
+	if request.method == "POST":
+		random.seed(random.randint(1, sys.maxint))
+		nonce = random.randint(1, sys.maxint)
+
+		while not db.verify_nonce(nonce):
+			nonce = random.randint(1, sys.maxint)
+		db.add_nonce(nonce)
+
+		response = make_response(json.dumps({'success': True, 'nonce': str(nonce)}))
+		return response
 
 @app.route("/home", methods=["POST"])
 def homepage():
@@ -107,9 +115,7 @@ def login():
 			nonce = encrypted_login_message["nonce"]
 
 			if db.verify_nonce(nonce):
-				db.add_nonce(nonce)
-			else:
-				response = make_response(json.dumps({'success': False, 'error': 'Nonce Already Used. Try Again.'}), status.HTTP_200_OK)
+				response = make_response(json.dumps({'success': False, 'error': 'No Nonce Found. Try Again.'}), status.HTTP_200_OK)
 				return response
 
 			if db.verify_user(username, encrypted_hashed_password_with_nonce, nonce):
@@ -119,9 +125,16 @@ def login():
 				db.update_cookie(username, cookie, cur_timestamp)
 				response = make_response(json.dumps({'success' : True, "cookie": cookie, 'time_stamp': cur_timestamp, 'expire_date': str(expire_date)}), status.HTTP_200_OK)
 				
+				random.seed(random.randint(1, sys.maxint))
+				nonce = random.randint(1, sys.maxint)
+
+				while not db.verify_nonce(nonce):
+					nonce = random.randint(1, sys.maxint)
+				db.add_nonce(nonce)
+
 				cookie_data = {"username": username, "user_cookie": cookie, "time_stamp": cur_timestamp}
 				response.set_cookie("cookie_data", value=json.dumps(cookie_data), expires=expire_date, max_age=config.MAX_LIFE)
-
+				response.set_cookie("nonce", value=str(nonce))
 				return response
 			else :
 				response = make_response(json.dumps({'success' : False, 'error' : 'Incorrect Password'}), status.HTTP_200_OK)

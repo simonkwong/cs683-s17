@@ -45,7 +45,8 @@ class DbController():
 					hash VARCHAR(1024) DEFAULT NULL,
 					cookie VARCHAR(1024) DEFAULT NULL,
 					time_stamp VARCHAR(128) DEFAULT NULL,
-					public_key VARCHAR(2048) DEFAULT NULL
+					public_key VARCHAR(2048) DEFAULT NULL,
+					nonce INT(16) UNSIGNED DEFAULT NULL
 					) ENGINE=InnoDB DEFAULT CHARSET=utf8
 				"""
 
@@ -115,11 +116,17 @@ class DbController():
 
 	def add_nonce(self, nonce):
 		query = """ INSERT INTO nonces (nonce) VALUES (%d) """ % nonce
+		nonce_id = self.execute_query(query)
+		return nonce_id
+
+	def map_nonce(self, username, nonce_id):
+		query = """ UPDATE users SET nonce = %d WHERE username = "%s" 
+				""" % (nonce_id, username)
 		self.execute_query(query)
 		return True
 
 	def verify_nonce(self, nonce):
-		query = """ SELECT * FROM nonces WHERE nonce = %d """ % nonce
+		query = """ SELECT * FROM nonces WHERE nonce = %d """ % int(nonce)
 		nonce = self.fetch_one(query)
 		if nonce is None:
 			return True
