@@ -20,8 +20,8 @@ def home():
 	if request.method == "GET":
 		return render_template("/html/index.html")
 
-@app.route("/upload", methods=["POST"])
-def communicate():
+@app.route("/bob", methods=["POST"])
+def chat_with_bob():
 	if request.method == "POST":
 
 		user_name = request.form["user_name"]
@@ -37,7 +37,7 @@ def communicate():
 		public_key = RSA.importKey(public_key)
 		private_key = RSA.importKey(private_key)
 
-		
+
 
 		fresh_session_key = RSA.generate(config.KEY_SIZE)
 
@@ -46,6 +46,12 @@ def communicate():
 
 		response = make_response(json.dumps({'success': True}), status.HTTP_200_OK)
 		return response
+
+@app.route("/mitm", methods=["POST"])
+def mitm():
+	if request.method == "POST":
+		pass
+
 
 def post_server_response(url, data):
 	data = urllib.urlencode(data)
