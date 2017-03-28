@@ -105,7 +105,6 @@ def login():
 
 			encrypted_hashed_password_with_nonce = encrypted_login_message["encrypted_hashed_password"]
 			nonce = encrypted_login_message["nonce"]
-			print nonce
 
 			if db.verify_nonce(nonce):
 				db.add_nonce(nonce)

@@ -107,7 +107,6 @@ def login():
 
 		random.seed(random.randint(1, sys.maxint))
 		nonce = random.randint(1, sys.maxint)
-		print nonce
 		hashed_password_with_nonce = hashlib.sha512(hashed_password + str(nonce)).hexdigest()
 		login_message = json.dumps({'encrypted_hashed_password': hashed_password_with_nonce, 'nonce': nonce})
 
