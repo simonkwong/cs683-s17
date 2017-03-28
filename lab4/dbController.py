@@ -80,13 +80,16 @@ class DbController():
 		self.execute_query(query)
 		return True
 
-	def verify_user(self, username, hashed_password):
+	def verify_user(self, username, encrypted_hashed_password_with_nonce, nonce):
 		if self.is_username_available(username):
 			query = """ SELECT * FROM users WHERE username = "%s"
 					""" % username
 			user = self.fetch_one(query)
-			user = str(user["hash"])
-			return (user == hashed_password)
+			stored_hashed_password = str(user["hash"])
+
+			validating_hashed_password_with_nonce = hashlib.sha512(stored_hashed_password + str(nonce)).hexdigest()
+
+			return (validating_hashed_password_with_nonce == encrypted_hashed_password_with_nonce)
 		return False
 
 	def get_user_public_key(self, username):
@@ -110,5 +113,14 @@ class DbController():
 			return self.fetch_one(query)
 		return None
 
+	def add_nonce(self, nonce):
+		query = """ INSERT INTO nonces (nonce) VALUES (%d) """ % nonce
+		self.execute_query(query)
+		return True
+
 	def verify_nonce(self, nonce):
-		pass
+		query = """ SELECT * FROM nonces WHERE nonce = %d """ % nonce
+		nonce = self.fetch_one(query)
+		if nonce is None:
+			return True
+		return False

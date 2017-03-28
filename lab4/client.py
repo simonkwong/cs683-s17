@@ -56,6 +56,7 @@ def homepage():
 		time_stamp = request.cookies.get("time_stamp")
 		if not (username and user_cookie and time_stamp):
 			return redirect("/")
+
 		data = {"username": username, 
 				"user_cookie": user_cookie, 
 				"time_stamp": time_stamp}
@@ -63,9 +64,11 @@ def homepage():
 		response_text = json.loads(response_text)
 		if response_text['success']:
 			return render_template("/html/homepage.html")
-		else:
-			# return redirect("/")
-			pass
+		response = make_response(redirect("/"))
+		response.set_cookie("username", expires=0)
+		response.set_cookie("user_cookie", expires=0)
+		response.set_cookie("time_stamp", expires=0)
+		return response		
 
 @app.route("/register", methods=["POST"])
 def register():	
@@ -82,9 +85,9 @@ def register():
 			expire_date = response_text["expire_date"]
 			expire_date = datetime.strptime(expire_date, "%Y-%m-%d %H:%M:%S.%f")
 			response = make_response(json.dumps({'success' : True}), status.HTTP_200_OK)
-			response.set_cookie("username", value=username, expires=expire_date)
-			response.set_cookie("user_cookie", value=response_text["cookie"], expires=expire_date)
-			response.set_cookie("time_stamp", value=response_text["time_stamp"], expires=expire_date)
+			response.set_cookie("username", value=username, expires=expire_date, max_age=config.MAX_LIFE)
+			response.set_cookie("user_cookie", value=response_text["cookie"], expires=expire_date, max_age=config.MAX_LIFE)
+			response.set_cookie("time_stamp", value=response_text["time_stamp"], expires=expire_date, max_age=config.MAX_LIFE)
 			return response
 		else:
 			response = make_response(json.dumps({'success' : False, 'error' : response_text['error']}), status.HTTP_200_OK)
@@ -102,13 +105,16 @@ def login():
 
 		hashed_password = hashed_password.encode("utf-8")
 
-		random.seed(683)
+		random.seed(random.randint(1, sys.maxint))
 		nonce = random.randint(1, sys.maxint)
+		print nonce
+		hashed_password_with_nonce = hashlib.sha512(hashed_password + str(nonce)).hexdigest()
+		login_message = json.dumps({'encrypted_hashed_password': hashed_password_with_nonce, 'nonce': nonce})
 
-		encrypted_hashed_password = private_key.decrypt(hashed_password + nonce)
-		encrypted_hashed_password = base64.b64encode(encrypted_hashed_password)
+		encrypted_login_message = private_key.decrypt(login_message)
+		encrypted_login_message = base64.b64encode(encrypted_login_message)
 
-		data = {"username": username, "password": encrypted_hashed_password}
+		data = {"username": username, "password": encrypted_login_message}
 		response_text = post_server_response("/login", data)
 		response_text = json.loads(response_text)
 		if (response_text['success']):
@@ -116,9 +122,9 @@ def login():
 			expire_date = datetime.strptime(expire_date, "%Y-%m-%d %H:%M:%S.%f")
 			expire_date = response_text["expire_date"]
 			response = make_response(json.dumps({'success' : True}), status.HTTP_200_OK)
-			response.set_cookie("username", value=username, expires=expire_date)
-			response.set_cookie("user_cookie", value=response_text["cookie"], expires=expire_date)
-			response.set_cookie("time_stamp", value=response_text["time_stamp"], expires=expire_date)
+			response.set_cookie("username", value=username, expires=expire_date, max_age=config.MAX_LIFE)
+			response.set_cookie("user_cookie", value=response_text["cookie"], expires=expire_date, max_age=config.MAX_LIFE)
+			response.set_cookie("time_stamp", value=response_text["time_stamp"], expires=expire_date, max_age=config.MAX_LIFE)
 			return response
 		else:
 			response = make_response(json.dumps(response_text), status.HTTP_200_OK)

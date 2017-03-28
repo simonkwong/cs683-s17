@@ -25,7 +25,13 @@ def validate_cookie(username, user_cookie, time_stamp):
 	else:
 		return False
 
+	cur_timestamp = datetime.now()
 	time_stamp = datetime.strptime(time_stamp, "%Y-%m-%d %H:%M:%S.%f")
+	expire_date = time_stamp + timedelta(days=0, seconds=config.MAX_LIFE)
+
+	if expire_date < cur_timestamp:
+		return False
+
 	validating_cookie = hashlib.sha512(app.secret_key + username + str(time_stamp)).hexdigest()
 
 	if (str(stored_user_cookie) == str(user_cookie)) and (str(stored_user_cookie) == validating_cookie):
@@ -49,7 +55,7 @@ def homepage():
 			return make_response(json.dumps({'success': False}), status.HTTP_200_OK)
 		if validate_cookie(username, user_cookie, time_stamp):
 			return make_response(json.dumps({'success': True}), status.HTTP_200_OK)
-		return make_response(json.dumps({'success': False}), status.HTTP_200_OK)
+		return make_response(json.dumps({'success': False}), status.HTTP_200_OK)		
 
 @app.route("/register", methods=["POST"])
 def register():	
@@ -67,9 +73,9 @@ def register():
 		db = DbController()
 		if db.add_user(username, hashed_password, cookie, cur_timestamp, public_key):
 			response = make_response(json.dumps({'success' : True, 'cookie' : cookie, 'time_stamp': cur_timestamp, 'expire_date': str(expire_date)}), status.HTTP_200_OK)
-			response.set_cookie("username", value=username, expires=expire_date)
-			response.set_cookie("user_cookie", value=cookie, expires=expire_date)
-			response.set_cookie("time_stamp", value=cur_timestamp, expires=expire_date)
+			response.set_cookie("username", value=username, expires=expire_date, max_age=config.MAX_LIFE)
+			response.set_cookie("user_cookie", value=cookie, expires=expire_date, max_age=config.MAX_LIFE)
+			response.set_cookie("time_stamp", value=cur_timestamp, expires=expire_date, max_age=config.MAX_LIFE)
 			return response
 		else :
 			response = make_response(json.dumps({'success' : False, 'error' : 'Username Is Already In Use.'}), status.HTTP_200_OK)
@@ -82,9 +88,9 @@ def login():
 		expire_date = datetime.now()
 		expire_date = expire_date + timedelta(days=0, seconds=config.MAX_LIFE)
 		username = request.form["username"]
-		encrypted_hashed_password = request.form["password"]
+		encrypted_login_message = request.form["password"]
 
-		encrypted_hashed_password = base64.b64decode(encrypted_hashed_password)
+		encrypted_login_message = base64.b64decode(encrypted_login_message)
 
 		if not db.is_username_available(username):
 			response = make_response(json.dumps({'success' : False, 'error' : 'Unknown User'}), status.HTTP_200_OK)
@@ -93,18 +99,29 @@ def login():
 			public_key = db.get_user_public_key(username)
 			public_key = public_key.encode('ascii', 'ignore')
 			public_key = RSA.importKey(public_key)
-			hashed_password = public_key.encrypt(encrypted_hashed_password, None)
-			hashed_password = hashed_password[0]
+			encrypted_login_message = public_key.encrypt(encrypted_login_message, None)
+			encrypted_login_message = encrypted_login_message[0]
+			encrypted_login_message = json.loads(encrypted_login_message)
 
-			if db.verify_user(username, hashed_password):
+			encrypted_hashed_password_with_nonce = encrypted_login_message["encrypted_hashed_password"]
+			nonce = encrypted_login_message["nonce"]
+			print nonce
+
+			if db.verify_nonce(nonce):
+				db.add_nonce(nonce)
+			else:
+				response = make_response(json.dumps({'success': False, 'error': 'Nonce Already Used. Try Again.'}), status.HTTP_200_OK)
+				return response
+
+			if db.verify_user(username, encrypted_hashed_password_with_nonce, nonce):
 				cur_timestamp = datetime.now()
 				cur_timestamp = str(cur_timestamp)
 				cookie = hashlib.sha512(app.secret_key + username + cur_timestamp).hexdigest()
 				db.update_cookie(username, cookie, cur_timestamp)
 				response = make_response(json.dumps({'success' : True, "cookie": cookie, 'time_stamp': cur_timestamp, 'expire_date': str(expire_date)}), status.HTTP_200_OK)
-				response.set_cookie("username", value=username, expires=expire_date)
-				response.set_cookie("user_cookie", value=cookie, expires=expire_date)
-				response.set_cookie("time_stamp", value=cur_timestamp, expires=expire_date)
+				response.set_cookie("username", value=username, expires=expire_date, max_age=config.MAX_LIFE)
+				response.set_cookie("user_cookie", value=cookie, expires=expire_date, max_age=config.MAX_LIFE)
+				response.set_cookie("time_stamp", value=cur_timestamp, expires=expire_date, max_age=config.MAX_LIFE)
 				return response
 			else :
 				response = make_response(json.dumps({'success' : False, 'error' : 'Incorrect Password'}), status.HTTP_200_OK)
