@@ -1,6 +1,8 @@
 from flask import Flask, render_template, url_for, request, redirect, jsonify, make_response
 from flask_api import status
 from OpenSSL import SSL
+from Crypto import Random
+from Crypto.Cipher import AES
 from Crypto.PublicKey import RSA
 
 import config
@@ -15,6 +17,11 @@ app.secret_key = config.ALICE_SECRET
 
 headers = {"Content-type": "application/x-www-form-urlencoded", "Accept": "text/plain", "Charset": "utf-8"}
 
+alice_private_key = ""
+alice_public_key = ""
+bob_public_key = ""
+charlie_public_key = ""
+
 @app.route("/", methods=["GET"])
 def home():
 	if request.method == "GET":
@@ -26,42 +33,48 @@ def chat_with_bob():
 
 		user_name = request.form["user_name"]
 
-		public_key = request.files["public_key"]
-		public_key = public_key.stream.read().decode('utf-8').strip()
-		public_key = public_key.encode('ascii', 'ignore')
+		response_text = config.get_response("GET", "/getpublickey", {}, config.BOB_PORT)
+		response_text = json.loads(response_text)
 
-		private_key = request.files["private_key"]
-		private_key = private_key.stream.read().decode('utf-8').strip()
-		private_key = private_key.encode('ascii', 'ignore')
+		bob_public_key = response_text["public_key"]
 
-		public_key = RSA.importKey(public_key)
-		private_key = RSA.importKey(private_key)
+		a_priv_key = RSA.importKey(alice_private_key)
+		a_pub_key = RSA.importKey(alice_public_key)
+		b_pub_key = RSA.importKey(bob_public_key)
 
 
+		fresh_session_key = RSA.generate(config.SHARED_KEY_SIZE)
+		fresh_session_key = fresh_session_key.exportKey('PEM')
 
-		fresh_session_key = RSA.generate(config.KEY_SIZE)
+		# fresh_session_key = "THIS IS A TEST"
 
+		# fresh_session_key = a_pub_key.encrypt(fresh_session_key, None)
+		# fresh_session_key = base64.b64encode(fresh_session_key)
 
-		data = {"message"}
+		data = json.dumps({"message": str(user_name), "session_key": fresh_session_key})
+		data = a_priv_key.decrypt(data)
+		# data = data[0]
+		data = base64.b64encode(data)
+		data = {"message": data}
+
+		response_text = config.get_response("POST", "/communicate", data, config.BOB_PORT)
+		response_text = json.loads(response_text)
+		print response_text
 
 		response = make_response(json.dumps({'success': True}), status.HTTP_200_OK)
 		return response
+
+@app.route("/getpublickey", methods=["GET"])
+def get_public_key():
+	return make_response(json.dumps({"public_key": alice_public_key}))
 
 @app.route("/mitm", methods=["POST"])
 def mitm():
 	if request.method == "POST":
 		pass
 
-
-def post_server_response(url, data):
-	data = urllib.urlencode(data)
-
-	server_connection = httplib.HTTPConnection(config.CLIENT_HOST, config.SERVER_PORT)
-	server_connection.request("POST", url, data, headers)
-	response = server_connection.getresponse()
-	response_headers = response.getheaders()
-	response_text = response.read()
-	return response_text
-
 if __name__ == "__main__":
+	private_key = RSA.generate(config.KEY_SIZE)
+	alice_private_key = private_key.exportKey('PEM')
+	alice_public_key = private_key.publickey().exportKey('PEM')
 	app.run(config.HOST, config.ALICE_PORT)
