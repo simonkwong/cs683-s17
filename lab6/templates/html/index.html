@@ -20,39 +20,6 @@
 		
 		<!-- HASH SHA512 LIBRARY -->
 		<script type="text/javascript" src="{{ url_for('static', filename='js/js-sha512.js') }}"></script>
-
-		<!-- CRYPTICO ENCRYPTION AND DECRYPTION LIBRARY -->
-		<script type="text/javascript" src="{{ url_for('static', filename='js/cryptico/jsbn.js') }}"></script>
-        <script type="text/javascript" src="{{ url_for('static', filename='js/cryptico/random.js') }}"></script>
-        <script type="text/javascript" src="{{ url_for('static', filename='js/cryptico/hash.js') }}"></script>
-        <script type="text/javascript" src="{{ url_for('static', filename='js/cryptico/rsa.js') }}"></script>
-        <script type="text/javascript" src="{{ url_for('static', filename='js/cryptico/aes.js') }}"></script>
-        <script type="text/javascript" src="{{ url_for('static', filename='js/cryptico/api.js') }}"></script>
-
-        <!-- JSENCRYPT ENCRYPTION AND DECRYPTION LIBRARY -->
-        <script type="text/javascript" src="{{ url_for('static', filename='js/jsencrypt/asn1js/asn1.js') }}"></script>
-        <script type="text/javascript" src="{{ url_for('static', filename='js/jsencrypt/asn1js/base64.js') }}"></script>
-        <script type="text/javascript" src="{{ url_for('static', filename='js/jsencrypt/asn1js/hex.js') }}"></script>
-        <script type="text/javascript" src="{{ url_for('static', filename='js/jsencrypt/asn1js/oids.js') }}"></script>
-
-        <script type="text/javascript" src="{{ url_for('static', filename='js/jsencrypt/jsbn/base64.js') }}"></script>
-        <script type="text/javascript" src="{{ url_for('static', filename='js/jsencrypt/jsbn/jsbn.js') }}"></script>
-        <script type="text/javascript" src="{{ url_for('static', filename='js/jsencrypt/jsbn/jsbn2.js') }}"></script>
-        <script type="text/javascript" src="{{ url_for('static', filename='js/jsencrypt/jsbn/prng4.js') }}"></script>
-        <script type="text/javascript" src="{{ url_for('static', filename='js/jsencrypt/jsbn/rng.js') }}"></script>
-        <script type="text/javascript" src="{{ url_for('static', filename='js/jsencrypt/jsbn/rsa-async.js') }}"></script>
-        <script type="text/javascript" src="{{ url_for('static', filename='js/jsencrypt/jsbn/rsa.js') }}"></script>
-        <script type="text/javascript" src="{{ url_for('static', filename='js/jsencrypt/jsbn/rsa2.js') }}"></script>
-
-        <script type="text/javascript" src="{{ url_for('static', filename='js/jsencrypt/jsrsasign/asn1-1.0.js') }}"></script>
-
-        <script type="text/javascript" src="{{ url_for('static', filename='js/jsencrypt/jsencrypt.js') }}"></script>
-
-        <!-- FILESAVER LIBRARY -->
-		<script type="text/javascript" src="{{ url_for('static', filename='js/file-saver/FileSaver.js') }}"></script>
-		<script type="text/javascript" src="{{ url_for('static', filename='js/file-saver/FileSaver.min.js') }}"></script>
-
-
     </head>
 
     <body>
@@ -70,28 +37,12 @@
 			    	    <form id="chatBobModalForm">
 							<div class="modal-header">
 								<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-								<h4 class="modal-title" id="myModalLabel">UPLOAD PEM KEYS</h4>
-								<h5>Chat With Bob</h5>
+								<h4 class="modal-title" id="myModalLabel">CHAT WITH BOB</h4>
 							</div>
 							<div class="form-element-row">
 								<center>
 									<label for="bob-name">Enter Your Name</label>
 									<input required type="text" id="bob-name"><br>
-
-<!-- 									<label for="bob-private-key">Upload Your Private Key</label>
-									<input required type="file" id="bob-private-key" accept=".pem">
-
-									<label for="bob-public-key">Upload Your Public Key</label>
-									<input required type="file" id="bob-public-key" accept=".pem">
-
-									<label for="bob-bob-private-key">Upload Bob's Private Key</label>
-									<input required type="file" id="bob-bob-private-key">
-
-									<label for="bob-bob-public-key">Upload Bob's Public Key</label>
-									<input required type="file" id="bob-bob-public-key">
-
-									Don't Have A Key Pair?
-									<button id="generate-keypair">Generate KeyPair</button> -->
 								</center>
 							</div>
 							<div class="modal-footer">
@@ -111,33 +62,17 @@
 			    	    <form id="mitmModalForm">
 							<div class="modal-header">
 								<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-								<h4 class="modal-title" id="myModalLabel">UPLOAD PEM KEYS</h4>
-								<h5>Chat With Bob. Where's Charlie?</h5>
+								<h4 class="modal-title" id="myModalLabel">CHAT WITH BOB. WHERE"S CHARLIE?</h4>
 							</div>
 							<div class="form-element-row">
 								<center>
 									<label for="mitm-name">Enter Your Name</label>
 									<input required type="text" id="mitm-name"><br>
-
-									<label for="mitm-private-key">Upload Your Private Key</label>
-									<input required type="file" id="mitm-private-key" accept=".pem">
-
-									<label for="mitm-public-key">Upload Your Public Key</label>
-									<input required type="file" id="mitm-public-key" accept=".pem">
-
-									<label for="mitm-bob-public-key">Upload Bob's Public Key</label>
-									<input required type="file" id="mitm-bob-public-key">
-
-									<label for="mitm-charlie-public-key">Upload Charlie's Public Key</label>
-									<input required type="file" id="mitm-charlie-public-key">
-
-									Don't Have A Key Pair?
-									<button id="generate-keypair">Generate KeyPair</button>
 								</center>
 							</div>
 							<div class="modal-footer">
 								<p class="status-message" id="mitm-status-message"></p>
-								<button id="mitm-button" type="submit" class="std-btn go">Upload</button>
+								<button id="mitm-button" type="submit" class="std-btn go">Where's Charlie?</button>
 							</div>
 						</form>
 			    	</div>
