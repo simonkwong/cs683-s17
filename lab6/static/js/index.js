@@ -20,11 +20,11 @@ var chatBobModalComponent = function() {
 					console.log(data);
 					var response = JSON.parse(data.responseText);
 					if (Boolean(response.success)) {
-						$("#bob-status-message").html = "Handshake Successfully Established.";
+						$("#bob-status-message").html("Handshake Successfully Established.");
 						$("#bob-status-message").css("color", "chartreuse");
 						$("#bob-status-message").show();
 					} else {
-						$("#bob-status-message").html = response.error;
+						$("#bob-status-message").html(response.error);
 						$("#bob-status-message").css("color", "red");
 						$("#bob-status-message").show();
 					}
@@ -55,12 +55,16 @@ var mitmModalComponent = function() {
 				complete: function(data, status) {
 					console.log(data);
 					var response = JSON.parse(data.responseText);
-					// if (Boolean(response.success)) {
-					// 	window.location = "/home";
-					// } else {
-					// 	document.getElementById("register-status-message").innerHTML = response.error;
-					// 	$("#register-status-message").show();
-					// }
+					if (Boolean(response.success)) {
+						$("#mitm-status-message").html("Handshake Successfully Established.");
+						$("#mitm-status-message").css("color", "chartreuse");
+						$("#mitm-status-message").show();
+					} else {
+						document.getElementById("register-status-message").innerHTML = response.error;
+						$("#mitm-status-message").html(response.error);
+						$("#mitm-status-message").css("color", "red");
+						$("#mitm-status-message").show();
+					}
 				}
 			});
 		});
@@ -72,6 +76,9 @@ $(document).ready(function() {
 
 	var chatBobModalComponent_ = new chatBobModalComponent();
 	chatBobModalComponent_.init();
+
+	var mitmModalComponent_ = new mitmModalComponent();
+	mitmModalComponent_.init();
 
 	$("#chatBobModal").on("shown.bs.modal", function() {
 		$("#bob-name").focus();

@@ -24,7 +24,7 @@ nonce = ""
 @app.route("/initiatehandshake", methods=["POST"])
 def initiatehandshake():
 	if request.method == "POST":
-		global nonce
+		global nonce, session_key
 
 		b_priv_key = RSA.importKey(bob_private_key)
 		b_pub_key = RSA.importKey(bob_public_key)
@@ -48,10 +48,13 @@ def initiatehandshake():
 @app.route("/verifyhandshake", methods=["POST"])
 def verifyhandshake():
 	if request.method == "POST":
-		global nonce
+		global nonce, session_key
 
 		message = request.form['message']
-		signature = request.form['signature']
+		message = config.aes_decrypt(message, session_key)
+		message = json.loads(message)
+
+		signature = message['signature']
 		signature = (long(signature),)
 
 		nonce = int(nonce)
