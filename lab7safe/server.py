@@ -81,20 +81,21 @@ def homepage():
 @app.route("/register", methods=["POST"])
 def register():	
 	if request.method == "POST":
+
+		print "REGISTRATION"
+
 		expire_date = datetime.now()
 		expire_date = expire_date + timedelta(days=0, seconds=config.MAX_LIFE)
 		
 		username = request.form["username"]
 		hashed_password = request.form["password"]
-		public_key = request.files["public_key"]
-		public_key = public_key.stream.read().decode('utf-8').strip()
 		
 		cur_timestamp = datetime.now()
 		cur_timestamp = str(cur_timestamp)
 		cookie = hashlib.sha512(app.secret_key + username + cur_timestamp).hexdigest()
 
 		db = DbController()
-		if db.add_user(username, hashed_password, cookie, cur_timestamp, public_key):
+		if db.add_user(username, hashed_password, cookie, cur_timestamp):
 			response = make_response(json.dumps({'success' : True, 'cookie' : cookie, 'time_stamp': cur_timestamp, 'expire_date': str(expire_date)}), status.HTTP_200_OK)
 			
 			cookie_data = {"username": username, "user_cookie": cookie, "time_stamp": cur_timestamp}
@@ -114,28 +115,10 @@ def login():
 
 		hashed_password = request.form["password"]
 
-		# encrypted_login_message = request.form["password"]
-
-		# encrypted_login_message = base64.b64decode(encrypted_login_message)
-
 		if not db.is_username_available(username):
 			response = make_response(json.dumps({'success' : False, 'error' : 'Unknown User'}), status.HTTP_200_OK)
 			return response
 		else:
-			# public_key = db.get_user_public_key(username)
-			# public_key = public_key.encode('ascii', 'ignore')
-			# public_key = RSA.importKey(public_key)
-			# encrypted_login_message = public_key.encrypt(encrypted_login_message, None)
-			# encrypted_login_message = encrypted_login_message[0]
-			# encrypted_login_message = json.loads(encrypted_login_message)
-
-			# encrypted_hashed_password_with_nonce = encrypted_login_message["encrypted_hashed_password"]
-			# nonce = encrypted_login_message["nonce"]
-
-			# if db.verify_nonce(nonce):
-			# 	response = make_response(json.dumps({'success': False, 'error': 'No Nonce Found. Try Again.'}), status.HTTP_200_OK)
-			# 	return response
-
 			if db.verify_user(username, hashed_password):
 				cur_timestamp = datetime.now()
 				cur_timestamp = str(cur_timestamp)
@@ -146,26 +129,6 @@ def login():
 				cookie_data = {"username": username, "user_cookie": cookie, "time_stamp": cur_timestamp}
 				response.set_cookie("cookie_data", value=json.dumps(cookie_data), expires=expire_date, max_age=config.MAX_LIFE)
 				return response
-				
-
-			# if db.verify_user(username, encrypted_hashed_password_with_nonce, nonce):
-				# cur_timestamp = datetime.now()
-				# cur_timestamp = str(cur_timestamp)
-				# cookie = hashlib.sha512(app.secret_key + username + cur_timestamp).hexdigest()
-				# db.update_cookie(username, cookie, cur_timestamp)
-				# response = make_response(json.dumps({'success' : True, "cookie": cookie, 'time_stamp': cur_timestamp, 'expire_date': str(expire_date)}), status.HTTP_200_OK)
-				
-				# random.seed(random.randint(1, sys.maxint))
-				# nonce = random.randint(1, sys.maxint)
-
-				# while not db.verify_nonce(nonce):
-				# 	nonce = random.randint(1, sys.maxint)
-				# db.add_nonce(nonce)
-
-				# cookie_data = {"username": username, "user_cookie": cookie, "time_stamp": cur_timestamp}
-				# response.set_cookie("cookie_data", value=json.dumps(cookie_data), expires=expire_date, max_age=config.MAX_LIFE)
-				# response.set_cookie("nonce", value=str(nonce))
-				# return response
 			else :
 				response = make_response(json.dumps({'success' : False, 'error' : 'Incorrect Password'}), status.HTTP_200_OK)
 				return response
@@ -175,10 +138,6 @@ def login():
 def logout():
 	if request.method == "GET":
 		db = DbController()
-		# username = request.form["username"]
-		# user_cookie = request.form["user_cookie"]
-		# time_stamp = request.form["time_stamp"]
-		# db.update_cookie(username, "", time_stamp)
 		response = make_response(redirect("/"))
 		response.set_cookie("cookie_data", expires=0)
 		return response
