@@ -1,0 +1,24 @@
+
+#contact-message-input {
+	resize: vertical;
+	overflow: auto;
+	max-height: 350px;
+}
+
+.modal-open {
+	overflow-y: scroll;
+	padding-right: 0px !important;
+}
+
+.status-message {
+	color: red;
+	font-style: italic;
+	text-align: left;
+	margin-left: 10%;
+}
+
+.note {
+	color: red;
+	font-style: italic;
+	font-size: 10px;
+}

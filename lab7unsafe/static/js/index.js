@@ -17,8 +17,6 @@ var resigterModalComponent = function() {
 			var password = document.getElementById("register-password").value;
 			var confirm_password = document.getElementById("confirm-password").value;
 
-			var hashed_password = sha512(password);
-
 			if (username == null || password == null || confirm_password == null ||
 				username == "" || password == "" || confirm_password == "") {
 				document.getElementById("register-status-message").innerHTML = "All Fields Are Required.";
@@ -33,7 +31,7 @@ var resigterModalComponent = function() {
 	                type: 'POST',
 	                data: {
 	                	"username": username,
-	                	"password": hashed_password
+	                	"password": password
 	                },
 	                complete: function(data, status) {
 	                	console.log(data);
@@ -63,14 +61,12 @@ var loginModalComponent = function() {
 			var username = document.getElementById("login-username").value;
 			var password = document.getElementById("login-password").value;
 
-			var hashed_password = sha512(password);
-
 			$.ajax({
                 url: "/login",
                 type: 'POST',
                 data: {
                 	"username": username,
-                	"password": hashed_password
+                	"password": password
                 },
                 complete: function(data, status) {
                 	console.log(data);
